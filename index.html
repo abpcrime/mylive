@@ -4,21 +4,24 @@
     <meta charset="UTF-8">
     <title>My Private Live Stream</title>
     <style>
-        body { margin: 0; background-color: #000; color: white; font-family: sans-serif; text-align: center; }
+        body { margin: 0; background-color: #121212; color: white; font-family: sans-serif; text-align: center; overflow: hidden; }
         .container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        iframe { width: 90%; max-width: 960px; aspect-ratio: 16/9; border: 2px solid #333; border-radius: 10px; }
-        .info { margin-top: 10px; color: #aaa; font-size: 14px; }
+        iframe { width: 95%; max-width: 1000px; aspect-ratio: 16/9; border: 3px solid #333; border-radius: 12px; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
+        .status { margin-bottom: 15px; font-size: 1.2em; color: #00ff00; letter-spacing: 1px; }
+        .hint { margin-top: 10px; color: #888; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🔴 LIVE STREAM</h2>
+        <div class="status">● LIVE STREAMING</div>
+        
         <iframe 
-            src="https://vdo.ninja/?view=APKI_ID&autoplay=1&mute=0&cleanoutput" 
-            allow="autoplay;camera;microphone;fullscreen;display-capture;audio" 
+            src="https://vdo.ninja/?view=YBEdVsx&autoplay=1&mute=0&cleanoutput&loop=1" 
+            allow="autoplay;camera;microphone;fullscreen;audio" 
             allowfullscreen>
         </iframe>
-        <p class="info">Dhyan dein: Agar sound nahi aa raha, toh video par ek baar click karein.</p>
+        
+        <p class="hint">🔈 Sound nahi aa raha? Video par ek baar click karein.</p>
     </div>
 </body>
 </html>
