@@ -1,10 +1,24 @@
 <!DOCTYPE html>
-<html>
-<body style="margin:0; background:black;">
-    <iframe 
-        src="https://vdo.ninja/?view=YOUR_ID&autoplay=1&cleanoutput" 
-        style="width:100%; height:100vh; border:none;" 
-        allow="autoplay;camera;microphone">
-    </iframe>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>My Private Live Stream</title>
+    <style>
+        body { margin: 0; background-color: #000; color: white; font-family: sans-serif; text-align: center; }
+        .container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        iframe { width: 90%; max-width: 960px; aspect-ratio: 16/9; border: 2px solid #333; border-radius: 10px; }
+        .info { margin-top: 10px; color: #aaa; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔴 LIVE STREAM</h2>
+        <iframe 
+            src="https://vdo.ninja/?view=APKI_ID&autoplay=1&mute=0&cleanoutput" 
+            allow="autoplay;camera;microphone;fullscreen;display-capture;audio" 
+            allowfullscreen>
+        </iframe>
+        <p class="info">Dhyan dein: Agar sound nahi aa raha, toh video par ek baar click karein.</p>
+    </div>
 </body>
 </html>
