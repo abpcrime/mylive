@@ -1,25 +1,10 @@
 <!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <title>Live Streaming - My Website</title>
-    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-    <style>
-        body { background-color: #1a1a1a; color: white; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .video-container { width: 90%; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { margin-bottom: 20px; font-weight: 300; }
-    </style>
-</head>
-<body>
-
-    <h1>🔴 Live Stream</h1>
-
-    <div class="video-container">
-        <video id="my-live-video" class="video-js vjs-big-play-centered vjs-16-9" controls preload="auto" data-setup='{ "techOrder": ["youtube"], "sources": [{ "type": "video/youtube", "src": "https://www.youtube.com/watch?v=gCo_Tbea5Ek"}] }'>
-        </video>
-    </div>
-
-    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-youtube/2.6.1/videojs-youtube.min.js"></script>
+<html>
+<body style="margin:0; background:black;">
+    <iframe 
+        src="https://vdo.ninja/?view=YOUR_ID&autoplay=1&cleanoutput" 
+        style="width:100%; height:100vh; border:none;" 
+        allow="autoplay;camera;microphone">
+    </iframe>
 </body>
 </html>
