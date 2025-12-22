@@ -2,28 +2,63 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>BCCITV - Full HD Clean Player</title>
-    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCCITV Live - HD Player</title>
     <style>
-        body { margin: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: white; font-family: sans-serif; }
-        .video-container { width: 95%; max-width: 900px; border: 1px solid #333; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .vjs-big-play-button { background-color: #9147ff !important; border-radius: 50% !important; width: 2em !important; height: 2em !important; line-height: 2em !important; margin-left: -1em !important; margin-top: -1em !important; }
-        .header { margin-bottom: 10px; font-size: 20px; font-weight: bold; color: #fff; }
+        /* Pura page black aur clean rakhne ke liye */
+        body { 
+            margin: 0; 
+            padding: 0;
+            background-color: #000; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
+        /* Is container se bahar ka hissa (Logo) dikhega nahi */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1000px; /* Aap ise apne hisaab se badha sakte hain */
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border: 1px solid #222;
+            background: #000;
+        }
+
+        /* Player ko zoom karna taaki logo boundary se bahar chala jaye */
+        iframe {
+            position: absolute;
+            top: -40px;    /* Upar se hide karne ke liye */
+            left: -2px;
+            width: calc(100% + 4px);
+            height: calc(100% + 85px); /* Niche ke logo aur controls ko frame se bahar nikalne ke liye */
+            border: none;
+        }
+
+        /* Invisible layer taaki twitch ke icons par click na ho */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 85%;
+            z-index: 10;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">🔴 BCCI TV LIVE🔴</div>
-
-    <div class="video-container">
-        <video id="my-video" class="video-js vjs-big-play-button vjs-16-9" controls preload="auto" data-setup='{}'>
-            <source src="https://player.twitch.tv/?channel=bccitv&parent=abpcrime.github.io" type="application/x-mpegURL">
-            <p class="vjs-no-js">
-                Is video ko dekhne ke liye JavaScript enable karein.
-            </p>
-        </video>
+    <div class="video-wrapper">
+        <div class="overlay"></div>
+        <iframe
+            src="https://player.twitch.tv/?channel=bccitv&parent=abocrime.github.io&autoplay=true&muted=false"
+            allowfullscreen="true">
+        </iframe>
     </div>
 
-    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
 </body>
 </html>
