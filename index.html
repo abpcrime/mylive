@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>CricHD Player - Mobile Ready</title>
+    <title>CricHD Player - Live Stream</title>
     <script src="https://player.twitch.tv/js/embed/v1.js"></script>
     <style>
         body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
@@ -18,18 +18,14 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
-        #twitch-player {
-            width: 100%;
-            height: 100%;
-        }
+        #twitch-player { width: 100%; height: 100%; }
 
-        /* --- OFFLINE SCREEN WITH LOGO --- */
+        /* --- OFFLINE SCREEN STYLES --- */
         #offline-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* Cool dark gradient background */
-            background: radial-gradient(circle, #2a2a2a 0%, #000000 90%);
-            display: none; /* Controlled by script */
+            background: radial-gradient(circle, #222 0%, #000 90%);
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -39,10 +35,9 @@
             text-align: center;
         }
 
-        /* Container for Logo + Animation */
         .signal-container {
             position: relative;
-            width: 120px; /* Thoda bada kiya logo ke liye */
+            width: 120px;
             height: 120px;
             margin-bottom: 20px;
             display: flex;
@@ -50,38 +45,30 @@
             align-items: center;
         }
 
-        /* THE LOGO STYLE */
+        /* --- LOGO CSS --- */
         .brand-logo {
-            width: 70px;
-            height: 70px;
-            background: #ffcc00; /* CricHD Yellow Theme */
-            color: #000;
+            width: 80px; 
+            height: 80px;
+            background: #000; 
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 5; /* Rings ke upar rahega */
-            box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
-            font-family: "Impact", sans-serif;
-            font-size: 18px;
-            line-height: 1.1;
-            text-align: center;
-            border: 3px solid #fff;
-            overflow: hidden; /* Image bahar na nikle */
+            z-index: 5;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.6);
+            border: 2px solid #fff;
+            overflow: hidden;
         }
-        
-        /* Agar aap image use karenge toh yeh style apply hoga */
+
         .brand-logo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        /* Ripple Animation Rings */
         .signal-ring {
             position: absolute;
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             border: 2px solid rgba(255, 204, 0, 0.4);
             border-radius: 50%;
             opacity: 0;
@@ -94,8 +81,8 @@
         .signal-ring:nth-child(3) { animation-delay: 1.2s; }
 
         @keyframes ripple {
-            0% { transform: scale(0.5); opacity: 1; border-width: 4px; }
-            100% { transform: scale(1.4); opacity: 0; border-width: 0px; }
+            0% { transform: scale(0.6); opacity: 1; border-width: 3px; }
+            100% { transform: scale(1.6); opacity: 0; border-width: 0px; }
         }
         
         .engaging-font {
@@ -103,57 +90,36 @@
             font-size: 5vw; 
             text-transform: uppercase;
             color: #fff;
-            letter-spacing: 1px;
             margin: 0;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
         }
 
         .sub-text {
-            font-family: sans-serif;
-            font-size: 1.2vw;
-            color: #ccc;
-            margin-top: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: rgba(0,0,0,0.5);
-            padding: 5px 10px;
-            border-radius: 4px;
+            font-family: sans-serif; font-size: 1.2vw; color: #aaa; margin-top: 10px;
+            text-transform: uppercase; letter-spacing: 2px;
         }
         
-        /* Controls Styling */
         .custom-controls {
-            position: absolute;
-            bottom: 0; left: 0; width: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 10px;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 20;
-            opacity: 0; 
-            transition: opacity 0.3s;
-            border-top: 1px solid #444;
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: rgba(0, 0, 0, 0.8); padding: 10px; box-sizing: border-box;
+            display: flex; align-items: center; gap: 10px; z-index: 20;
+            opacity: 0; transition: opacity 0.3s;
         }
-
         .player-container:hover .custom-controls { opacity: 1; }
 
-        /* --- MOBILE RESPONSIVE --- */
         @media (max-width: 768px) {
             .custom-controls { opacity: 1; padding: 8px; }
             .engaging-font { font-size: 24px; } 
-            .sub-text { font-size: 11px; }
-            .signal-container { width: 90px; height: 90px; } /* Mobile pe thoda chota */
-            .brand-logo { width: 50px; height: 50px; font-size: 12px; }
-            button { padding: 6px 10px; font-size: 12px; }
+            .sub-text { font-size: 12px; }
+            .signal-container { width: 90px; height: 90px; }
+            .brand-logo { width: 60px; height: 60px; }
+            button { padding: 5px 8px; font-size: 12px; }
         }
 
         button, select, input {
             background: #333; color: white; border: 1px solid #555;
             padding: 5px 10px; cursor: pointer; border-radius: 4px; font-size: 13px;
         }
-        button:hover { background: #ffcc00; color: black; border-color: #ffcc00; }
-        input[type=range] { width: 60px; accent-color: #ffcc00; }
         #statusText { margin-left: auto; font-size: 12px; font-weight: bold; }
     </style>
 </head>
@@ -162,16 +128,16 @@
     <div class="player-container">
         <div id="offline-overlay">
             <div class="signal-container">
+                
                 <div class="brand-logo">
-                    <span>CRIC<br>HD</span>
+                    <img src="https://drive.google.com/uc?export=view&id=1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="CricHD Logo">
                 </div>
-                <div class="signal-ring"></div>
+                
                 <div class="signal-ring"></div>
                 <div class="signal-ring"></div>
             </div>
-            
             <h1 class="engaging-font">Stream Starting Soon</h1>
-            <div class="sub-text">Waiting for Live Feed...</div>
+            <div class="sub-text">Live broadcast will begin shortly</div>
         </div>
 
         <div id="twitch-player"></div>
@@ -180,26 +146,17 @@
             <button id="playBtn">Play</button>
             <button id="muteBtn">Unmute</button>
             <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5">
-            <select id="qualitySelect">
-                <option value="auto">Auto</option>
-            </select>
-            <span id="statusText" style="color: #0f0;">Connecting...</span>
+            <select id="qualitySelect"><option value="auto">Auto</option></select>
+            <span id="statusText" style="color: #0f0;">...</span>
         </div>
     </div>
 
     <script type="text/javascript">
       var options = {
-        width: "100%",
-        height: "100%",
-        channel: "bccitv", 
-        parent: ["abpcrime.github.io"],
-        autoplay: true,
-        muted: true, 
-        controls: false 
+        width: "100%", height: "100%", channel: "bccitv", 
+        parent: ["abpcrime.github.io"], autoplay: true, muted: true, controls: false 
       };
-
       var player = new Twitch.Player("twitch-player", options);
-      
       const playBtn = document.getElementById('playBtn');
       const muteBtn = document.getElementById('muteBtn');
       const volRange = document.getElementById('volRange');
@@ -212,23 +169,17 @@
           var qualities = player.getQualities();
           qualities.forEach(q => {
               var opt = document.createElement('option');
-              opt.value = q.group;
-              opt.text = q.name;
-              qualitySelect.appendChild(opt);
+              opt.value = q.group; opt.text = q.name; qualitySelect.appendChild(opt);
           });
       });
 
       player.addEventListener(Twitch.Player.ONLINE, () => {
-          statusText.innerText = "● LIVE NOW";
-          statusText.style.color = "#ff0000"; 
-          statusText.style.textShadow = "0 0 5px red";
+          statusText.innerText = "● LIVE"; statusText.style.color = "red";
           offlineOverlay.style.display = "none";
       });
 
       player.addEventListener(Twitch.Player.OFFLINE, () => {
-          statusText.innerText = "OFFLINE";
-          statusText.style.color = "#ffcc00";
-          statusText.style.textShadow = "none";
+          statusText.innerText = "OFFLINE"; statusText.style.color = "#ffcc00";
           offlineOverlay.style.display = "flex";
       });
 
@@ -236,12 +187,10 @@
           if (player.isPaused()) { player.play(); playBtn.innerText = "Pause"; } 
           else { player.pause(); playBtn.innerText = "Play"; }
       });
-
       muteBtn.addEventListener('click', () => {
           if (player.getMuted()) { player.setMuted(false); muteBtn.innerText = "Mute"; } 
           else { player.setMuted(true); muteBtn.innerText = "Unmute"; }
       });
-
       volRange.addEventListener('input', (e) => { player.setVolume(parseFloat(e.target.value)); });
       qualitySelect.addEventListener('change', (e) => { player.setQuality(e.target.value); });
     </script>
