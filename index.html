@@ -2,47 +2,159 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>CricHD Player</title>
+    <title>Advanced CricHD Player - Starting Soon</title>
     <script src="https://player.twitch.tv/js/embed/v1.js"></script>
     <style>
-        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
         .player-container {
             position: relative;
             width: 100%;
             max-width: 900px;
             aspect-ratio: 16/9;
-            overflow: hidden; /* Logo hide karne ke liye */
-            border: 2px solid #1a1a1a;
+            border: 2px solid #333;
+            background: #000;
         }
 
         #twitch-player {
-            position: absolute;
-            top: -35px; /* Logo ko upar push karke hide karne ke liye */
-            left: 0;
             width: 100%;
-            height: calc(100% + 70px); /* Niche ke controls hide karne ke liye */
+            height: 100%;
         }
+
+        /* Feature 2: Offline Overlay Styling */
+        #offline-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            /* Thoda darker background taaki text chamke */
+            background: rgba(0, 0, 0, 0.95);
+            display: none; /* Default hide rahega */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        /* NEW: Engaging Font Style */
+        .engaging-font {
+            font-family: "Arial Black", "Impact", sans-serif; /* Mota aur impactful font */
+            font-size: 3em; /* Bada size */
+            text-transform: uppercase; /* Sab capital letters mein */
+            color: #ffcc00; /* Gold/Yellow color attention ke liye */
+            text-align: center;
+            letter-spacing: 2px; /* Aksharon ke beech thodi jagah */
+            text-shadow: 3px 3px 5px rgba(0,0,0,0.8); /* Text ke piche gehri parchhai */
+            margin: 0;
+        }
+        
+        /* Feature 1 & 3: Custom Controls Bar Styling */
+        .custom-controls {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 20;
+            opacity: 0; /* Mouse hover par dikhega */
+            transition: opacity 0.3s;
+        }
+
+        .player-container:hover .custom-controls { opacity: 1; }
+
+        button, select, input {
+            background: #333; color: white; border: 1px solid #555;
+            padding: 5px 10px; cursor: pointer; border-radius: 4px;
+        }
+        button:hover { background: #555; }
+        input[type=range] { width: 80px; }
     </style>
 </head>
 <body>
 
     <div class="player-container">
+        <div id="offline-overlay">
+            <h1 class="engaging-font">Live Streaming Starting Soon</h1>
+        </div>
+
         <div id="twitch-player"></div>
+
+        <div class="custom-controls">
+            <button id="playBtn">Play</button>
+            <button id="muteBtn">Unmute</button>
+            <label>Vol:</label>
+            <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5">
+            <select id="qualitySelect">
+                <option value="auto">Auto</option>
+            </select>
+            <span id="statusText" style="margin-left: auto; font-size: 12px; color: #0f0;">Connecting...</span>
+        </div>
     </div>
 
     <script type="text/javascript">
       var options = {
         width: "100%",
         height: "100%",
-        channel: "bccitv", // Apka Twitch Username
-        parent: ["abpcrime.github.io"], // Apka GitHub Domain
+        channel: "bccitv", 
+        parent: ["abpcrime.github.io"],
         autoplay: true,
-        muted: false
+        muted: true, 
+        controls: false 
       };
-      var player = new Twitch.Player("twitch-player", options);
-      player.setVolume(1.0);
-    </script>
 
+      var player = new Twitch.Player("twitch-player", options);
+      
+      const playBtn = document.getElementById('playBtn');
+      const muteBtn = document.getElementById('muteBtn');
+      const volRange = document.getElementById('volRange');
+      const qualitySelect = document.getElementById('qualitySelect');
+      const statusText = document.getElementById('statusText');
+      const offlineOverlay = document.getElementById('offline-overlay');
+
+      player.addEventListener(Twitch.Player.READY, () => {
+          console.log("Player Ready!");
+          player.setVolume(0.5); 
+          var qualities = player.getQualities();
+          qualities.forEach(q => {
+              var opt = document.createElement('option');
+              opt.value = q.group;
+              opt.text = q.name;
+              qualitySelect.appendChild(opt);
+          });
+      });
+
+      // Stream Status Handling
+      player.addEventListener(Twitch.Player.ONLINE, () => {
+          statusText.innerText = "🔴 LIVE";
+          statusText.style.color = "#f00";
+          offlineOverlay.style.display = "none"; // Online hone par overlay chup jayega
+      });
+
+      player.addEventListener(Twitch.Player.OFFLINE, () => {
+          statusText.innerText = "⚪ Starting Soon";
+          statusText.style.color = "#ffcc00";
+          offlineOverlay.style.display = "flex"; // Offline hone par engaging overlay dikhega
+      });
+
+      // Play/Pause Logic
+      playBtn.addEventListener('click', () => {
+          if (player.isPaused()) { player.play(); playBtn.innerText = "Pause"; } 
+          else { player.pause(); playBtn.innerText = "Play"; }
+      });
+
+      // Mute/Unmute Logic
+      muteBtn.addEventListener('click', () => {
+          if (player.getMuted()) { player.setMuted(false); muteBtn.innerText = "Mute"; } 
+          else { player.setMuted(true); muteBtn.innerText = "Unmute"; }
+      });
+
+      // Volume & Quality Logic
+      volRange.addEventListener('input', (e) => { player.setVolume(parseFloat(e.target.value)); });
+      qualitySelect.addEventListener('change', (e) => { player.setQuality(e.target.value); });
+
+    </script>
 </body>
 </html>
