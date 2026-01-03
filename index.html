@@ -38,7 +38,7 @@
 
         #twitch-player { width: 100%; height: 100%; position: absolute; z-index: 1; }
 
-        /* --- OFFLINE SCREEN --- */
+        /* --- OVERLAY SCREEN --- */
         #offline-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15,15,15,0.98); 
@@ -58,10 +58,8 @@
         .controls-overlay {
             position: absolute; 
             bottom: 0; left: 0; width: 100%; 
-            /* Fix for Telegram: Extra padding at bottom */
             padding: 10px 20px 40px 20px; 
             padding-bottom: calc(40px + env(safe-area-inset-bottom));
-            
             background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             opacity: 0; transition: opacity 0.3s; z-index: 20; pointer-events: none;
         }
@@ -72,7 +70,6 @@
             background: rgba(30,30,30,0.8); backdrop-filter: blur(10px);
             padding: 8px 20px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1);
             width: fit-content; margin: 0 auto;
-            /* Raise the bar slightly */
             transform: translateY(-10px);
         }
 
@@ -93,8 +90,9 @@
             <div class="off-logo">
                 <img src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="Logo">
             </div>
-            <h1 class="off-title">OFFLINE</h1>
-            <p class="off-sub" id="statusMsg">Stream will start soon...</p>
+            <h1 class="off-title" id="statusTitle">CONNECTING...</h1>
+            <p class="off-sub" id="statusMsg">Checking live status...</p>
+            
             <a href="https://t.me/cric_hd_live" target="_blank" class="btn-tg">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.5 8.5l-2 9.5c-.1.5-.4.6-.8.4l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4v-4.6l8.3-7.5c.4-.3-.1-.5-.6-.2L6.8 11.6 2.4 10.2c-1-.3-1-1 .2-1.5l14.9-5.7c.7-.3 1.3 0 1 1.5z"/></svg>
                 Telegram
@@ -114,7 +112,6 @@
     </div>
 
 <script type="text/javascript">
-  // CHANNEL NAME HERE
   var options = {
     width: "100%", height: "100%", channel: "bccitv", 
     parent: ["abpcrime.github.io"], autoplay: true, muted: false, controls: false 
@@ -123,6 +120,8 @@
   var player = new Twitch.Player("twitch-player", options);
   
   const offlineOverlay = document.getElementById('offline-overlay');
+  const statusTitle = document.getElementById('statusTitle'); // New Ref
+  const statusMsg = document.getElementById('statusMsg'); // New Ref
   const controlsLayer = document.getElementById('controlsLayer');
   const pContainer = document.getElementById('pContainer');
   const playBtn = document.getElementById('playBtn');
@@ -148,9 +147,21 @@
   pContainer.addEventListener('click', showControls);
 
   // Player Events
-  player.addEventListener(Twitch.Player.READY, () => { player.setVolume(0.5); });
-  player.addEventListener(Twitch.Player.ONLINE, () => { offlineOverlay.style.display = "none"; });
-  player.addEventListener(Twitch.Player.OFFLINE, () => { offlineOverlay.style.display = "flex"; });
+  player.addEventListener(Twitch.Player.READY, () => { 
+      player.setVolume(0.5); 
+  });
+
+  player.addEventListener(Twitch.Player.ONLINE, () => { 
+      // Stream chalu hote hi overlay hata do
+      offlineOverlay.style.display = "none"; 
+  });
+
+  player.addEventListener(Twitch.Player.OFFLINE, () => { 
+      // Stream agar sach me offline hai, tab text change karo
+      statusTitle.innerText = "STREAM OFFLINE";
+      statusMsg.innerText = "Stream will start soon...";
+      offlineOverlay.style.display = "flex"; 
+  });
 
   playBtn.addEventListener('click', (e) => {
       e.stopPropagation();
