@@ -3,220 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>CricHD Live Player</title>
+    <title>CricHD Cinematic Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://player.twitch.tv/js/embed/v1.js"></script>
     <style>
-        /* --- ROOT VARIABLES & BASE --- */
         :root {
-            --primary-color: #E50914; /* Premium Red Accent */
-            --glass-bg: rgba(20, 20, 20, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --primary-color: #E50914;
+            --glass-bg: rgba(20, 20, 20, 0.65); /* Thoda aur transparent kiya */
             --text-light: #f0f0f0;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { 
             font-family: 'Montserrat', sans-serif; background: #000; color: var(--text-light);
-            height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
-        /* --- CINEMATIC BACKGROUND --- */
+        /* Background Blur */
         .cinema-bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            /* एक धुंधला क्रिकेट स्टेडियम का बैकग्राउंड */
             background: url('https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2067&auto=format&fit=crop') no-repeat center center/cover;
             filter: blur(20px) brightness(0.3); transform: scale(1.1); z-index: -1;
         }
 
-        /* --- TOP NAVIGATION BAR --- */
+        /* Navbar */
         .navbar {
-            width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;
-            z-index: 50; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            position: absolute; top: 0; left: 0; width: 100%; padding: 20px 40px; 
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 50; transition: opacity 0.3s;
         }
-        .brand { font-weight: 800; font-size: 1.8rem; letter-spacing: 2px; background: linear-gradient(45deg, #fff, #ccc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand { font-weight: 800; font-size: 1.5rem; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .live-status {
-            display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem;
-            background: rgba(229, 9, 20, 0.2); color: var(--primary-color); padding: 6px 14px; border-radius: 30px; border: 1px solid var(--primary-color);
+            display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.8rem;
+            background: rgba(229, 9, 20, 0.2); color: var(--primary-color); padding: 5px 12px; border-radius: 30px; border: 1px solid var(--primary-color);
         }
-        .live-dot { width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7); } 70% { opacity: 0.6; box-shadow: 0 0 0 10px rgba(229, 9, 20, 0); } 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); } }
+        .live-dot { width: 6px; height: 6px; background: var(--primary-color); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* --- MAIN PLAYER SECTION --- */
-        .main-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; padding: 20px; }
-        
+        /* Player Container */
         .player-container {
             position: relative; width: 100%; max-width: 1100px; aspect-ratio: 16/9;
-            border-radius: 16px; overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-            background: #000; border: 1px solid var(--glass-border);
+            background: #000; overflow: hidden; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border-radius: 12px;
+        }
+        /* Mobile Landscape Fix: Remove Border Radius to use full screen space */
+        @media (max-width: 900px) and (orientation: landscape) {
+            .player-container { max-width: 100%; height: 100vh; border-radius: 0; aspect-ratio: auto; }
+            .navbar { padding: 10px 20px; } 
         }
 
         #twitch-player { width: 100%; height: 100%; }
 
-        /* --- PREMIUM OFFLINE SCREEN --- */
+        /* Offline Screen */
         #offline-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--glass-bg); backdrop-filter: blur(15px);
+            background: rgba(10,10,10,0.95); backdrop-filter: blur(10px);
             display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10;
-            text-align: center; padding: 40px;
+            text-align: center; padding: 20px;
         }
-        .offline-logo-box { width: 100px; height: 100px; border-radius: 50%; background: #000; padding: 5px; border: 2px solid var(--primary-color); margin-bottom: 25px; box-shadow: 0 0 30px rgba(229, 9, 20, 0.4); }
+        .offline-logo-box { width: 80px; height: 80px; border-radius: 50%; padding: 4px; border: 2px solid var(--primary-color); margin-bottom: 15px; }
         .offline-logo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-        .offline-title { font-size: 3rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -1px; }
-        .offline-subtitle { font-size: 1.2rem; font-weight: 300; color: #aaa; margin-bottom: 35px; letter-spacing: 1px; }
+        .offline-title { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+        .offline-subtitle { font-size: 1rem; color: #aaa; margin-bottom: 20px; }
         
-        .cta-buttons { display: flex; gap: 20px; }
+        .cta-buttons { display: flex; gap: 15px; }
         .cta-btn {
-            text-decoration: none; padding: 12px 28px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 10px; transition: all 0.3s ease;
+            text-decoration: none; padding: 10px 20px; border-radius: 50px; font-weight: 600; font-size: 0.85rem;
+            display: flex; align-items: center; gap: 8px; transition: 0.3s;
         }
-        .btn-primary { background: var(--primary-color); color: white; border: 1px solid var(--primary-color); }
-        .btn-primary:hover { background: transparent; color: var(--primary-color); box-shadow: 0 0 20px rgba(229, 9, 20, 0.4); }
-        .btn-secondary { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); }
-        .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: #fff; }
-        .cta-btn svg { width: 18px; height: 18px; fill: currentColor; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-secondary { border: 1px solid rgba(255,255,255,0.3); color: white; }
+        .cta-btn svg { width: 16px; height: 16px; fill: currentColor; }
 
-        /* --- SLEEK CONTROLS BAR --- */
+        /* --- CONTROLS OVERLAY (The Fix) --- */
         .controls-overlay {
             position: absolute; bottom: 0; left: 0; width: 100%;
-            padding: 20px 25px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            opacity: 0; transition: opacity 0.4s ease; z-index: 20;
+            padding: 10px 20px 20px 20px; /* Bottom padding keeps it slightly up */
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            opacity: 0; /* Default Hidden */
+            transition: opacity 0.3s ease; 
+            z-index: 20;
+            pointer-events: none; /* Mouse can pass through when hidden */
         }
-        .player-container:hover .controls-overlay { opacity: 1; }
+        
+        /* Class to show controls */
+        .show-controls { opacity: 1; pointer-events: auto; }
 
         .controls-bar {
-            display: flex; align-items: center; gap: 20px;
-            background: var(--glass-bg); backdrop-filter: blur(10px);
-            padding: 10px 20px; border-radius: 50px; border: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 15px;
+            background: var(--glass-bg); backdrop-filter: blur(8px);
+            padding: 8px 20px; border-radius: 40px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            width: fit-content; margin: 0 auto; /* Center the bar */
         }
-        .icon-btn { background: none; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; transition: 0.2s; padding: 5px; }
+
+        /* Mobile Landscape Optimization */
+        @media (max-width: 900px) and (orientation: landscape) {
+            .controls-overlay { padding-bottom: 10px; }
+            .controls-bar {
+                padding: 5px 15px; gap: 10px;
+                background: rgba(0, 0, 0, 0.5); /* More transparent on mobile */
+                width: 90%; max-width: 500px;
+            }
+            .navbar { opacity: 0; pointer-events: none; } /* Hide Top bar in landscape for full view */
+            .show-controls .navbar { opacity: 1; } /* Show top bar only when tapped */
+        }
+
+        .icon-btn { background: none; border: none; color: #fff; cursor: pointer; padding: 5px; transition: 0.2s; display: flex; align-items: center; }
         .icon-btn:hover { color: var(--primary-color); transform: scale(1.1); }
-        .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
         
-        .vol-slider-box { display: flex; align-items: center; gap: 10px; width: 0; overflow: hidden; transition: width 0.3s ease; }
-        .vol-container:hover .vol-slider-box { width: 100px; }
-        input[type=range] { width: 100%; height: 4px; accent-color: var(--primary-color); cursor: pointer; }
+        .vol-container { display: flex; align-items: center; gap: 5px; }
+        input[type=range] { width: 60px; height: 3px; accent-color: var(--primary-color); cursor: pointer; }
 
-        /* --- MATCH INFO FOOTER --- */
-        .match-footer { margin-top: 25px; text-align: center; max-width: 800px; }
-        .match-headline { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
-        .match-sub { font-size: 0.9rem; color: #888; font-weight: 400; letter-spacing: 1px; }
-
-        @media (max-width: 768px) {
-            .navbar { padding: 15px 20px; }
-            .brand { font-size: 1.4rem; }
-            .controls-overlay { opacity: 1; padding: 10px; }
-            .controls-bar { padding: 8px 15px; gap: 15px; }
-            .offline-title { font-size: 2rem; }
-            .offline-subtitle { font-size: 1rem; }
-            .cta-buttons { flex-direction: column; gap: 10px; width: 100%; max-width: 250px; }
-            .cta-btn { justify-content: center; width: 100%; }
-            .match-headline { font-size: 1.2rem; }
-        }
     </style>
 </head>
 <body>
 
     <div class="cinema-bg"></div>
 
-    <nav class="navbar">
-        <div class="brand">CRIC HD CINEMA</div>
-        <div class="live-status" id="liveStatus" style="display:none;">
-            <div class="live-dot"></div> LIVE NOW
-        </div>
-    </nav>
-
-    <div class="main-content">
+    <div class="player-container" id="pContainer">
         
-        <div class="player-container">
-            <div id="offline-overlay">
-                <div class="offline-logo-box">
-                    <img src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="Logo">
-                </div>
-                <h1 class="offline-title">BROADCAST OFFLINE</h1>
-                <p class="offline-subtitle">The stream will begin momentarily. Stay tuned.</p>
+        <nav class="navbar" id="navBar">
+            <div class="brand">CRIC HD</div>
+            <div class="live-status" id="liveStatus" style="display:none;">
+                <div class="live-dot"></div> LIVE
+            </div>
+        </nav>
+
+        <div id="offline-overlay">
+            <div class="offline-logo-box">
+                <img src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="Logo">
+            </div>
+            <h1 class="offline-title">OFFLINE</h1>
+            <p class="offline-subtitle">Stream will start soon.</p>
+            <div class="cta-buttons">
+                <a href="https://t.me/cric_hd_live" target="_blank" class="cta-btn btn-primary">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.5 8.5l-2 9.5c-.1.5-.4.6-.8.4l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4v-4.6l8.3-7.5c.4-.3-.1-.5-.6-.2L6.8 11.6 2.4 10.2c-1-.3-1-1 .2-1.5l14.9-5.7c.7-.3 1.3 0 1 1.5z"/></svg> Telegram
+                </a>
+                <a href="https://www.facebook.com/profile.php?id=61585476940061" target="_blank" class="cta-btn btn-secondary">
+                    <svg viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02z"/></svg> Facebook
+                </a>
+            </div>
+        </div>
+
+        <div id="twitch-player"></div>
+
+        <div class="controls-overlay" id="controlsLayer">
+            <div class="controls-bar">
+                <button class="icon-btn" id="playBtn">
+                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
                 
-                <div class="cta-buttons">
-                    <a href="https://t.me/cric_hd_live" target="_blank" class="cta-btn btn-primary">
-                        <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.5 8.5l-2 9.5c-.1.5-.4.6-.8.4l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4v-4.6l8.3-7.5c.4-.3-.1-.5-.6-.2L6.8 11.6 2.4 10.2c-1-.3-1-1 .2-1.5l14.9-5.7c.7-.3 1.3 0 1 1.5z"/></svg>
-                        Telegram Updates
-                    </a>
-                    <a href="https://www.facebook.com/profile.php?id=61585476940061" target="_blank" class="cta-btn btn-secondary">
-                        <svg viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02z"/></svg>
-                        Facebook Page
-                    </a>
-                </div>
-            </div>
-
-            <div id="twitch-player"></div>
-
-            <div class="controls-overlay">
-                <div class="controls-bar">
-                    <button class="icon-btn" id="playBtn">
-                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    </button>
-                    
-                    <div class="vol-container" style="display:flex; align-items:center;">
-                        <button class="icon-btn" id="muteBtn">
-                            <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-                        </button>
-                        <div class="vol-slider-box">
-                            <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5">
-                        </div>
-                    </div>
-
-                    <div style="flex:1"></div> <button class="icon-btn" id="fsBtn">
-                        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="match-footer">
-            <div class="match-headline">Premium Live Cricket Streaming</div>
-            <div class="match-sub">Experience the game in High Definition without interruptions.</div>
-        </div>
-
-    </div>
-
-<script type="text/javascript">
-  var options = {
-    width: "100%", height: "100%", channel: "bccitv", 
-    parent: ["abpcrime.github.io"], autoplay: true, muted: true, controls: false 
-  };
-  var player = new Twitch.Player("twitch-player", options);
-  
-  const offlineOverlay = document.getElementById('offline-overlay');
-  const liveStatus = document.getElementById('liveStatus');
-  const playBtn = document.getElementById('playBtn');
-  const muteBtn = document.getElementById('muteBtn');
-  const fsBtn = document.getElementById('fsBtn');
-  const volRange = document.getElementById('volRange');
-  const playerContainer = document.querySelector('.player-container');
-
-  // Icons
-  const iPlay = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
-  const iPause = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
-  const iMute = '<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
-  const iUnmute = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
-
-  player.addEventListener(Twitch.Player.READY, () => { player.setVolume(0.5); });
-  player.addEventListener(Twitch.Player.ONLINE, () => { offlineOverlay.style.display = "none"; liveStatus.style.display = "flex"; });
-  player.addEventListener(Twitch.Player.OFFLINE, () => { offlineOverlay.style.display = "flex"; liveStatus.style.display = "none"; });
-
-  playBtn.addEventListener('click', () => {
-      if(player.isPaused()){ player.play(); playBtn.innerHTML = iPause; }
-      else { player.pause(); playBtn.innerHTML = iPlay; }
-  });
-  muteBtn.addEventListener('click', () => {
-      if(player.getMuted()){ player.setMuted(false); muteBtn.innerHTML = iUnmute; }
-      else { player.setMuted(true); muteBtn.innerHTML = iMute; }
-  });
-  fsBtn.addEventListener('click', () => {
-      !document.fullscreenElement ? playerContainer.requestFullscreen() : document.exitFullscreen();
-  });
-  volRange.addEventListener('input', (e) => { player.setVolume(parseFloat(e.target.value)); });
-</script>
-</body>
-</html>
+                <div class="vol-container">
+                    <button class="icon-btn" id="muteBtn">
+                        <svg viewBox="0 0 2
