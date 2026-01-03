@@ -3,206 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>CricHD Player</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>CricHD Live Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://player.twitch.tv/js/embed/v1.js"></script>
     <style>
-        /* --- THEME VARS --- */
+        /* --- ROOT VARIABLES & BASE --- */
         :root {
-            --primary: #2563eb; /* Hotstar Blue */
-            --accent: #ffcc00;
-            --bg: #0f1014;
-            --surface: #1c1e26;
-            --glass: rgba(28, 30, 38, 0.9);
+            --primary-color: #E50914; /* Premium Red Accent */
+            --glass-bg: rgba(20, 20, 20, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-light: #f0f0f0;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { 
-            background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; 
-            height: 100vh; display: flex; overflow: hidden;
+            font-family: 'Montserrat', sans-serif; background: #000; color: var(--text-light);
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center;
         }
 
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: 80px; height: 100vh; background: var(--surface); border-right: 1px solid #333;
-            display: flex; flex-direction: column; align-items: center; padding-top: 20px; z-index: 50;
-            transition: width 0.3s;
+        /* --- CINEMATIC BACKGROUND --- */
+        .cinema-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            /* एक धुंधला क्रिकेट स्टेडियम का बैकग्राउंड */
+            background: url('https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2067&auto=format&fit=crop') no-repeat center center/cover;
+            filter: blur(20px) brightness(0.3); transform: scale(1.1); z-index: -1;
         }
-        .sidebar:hover { width: 200px; } /* Expand on hover */
+
+        /* --- TOP NAVIGATION BAR --- */
+        .navbar {
+            width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;
+            z-index: 50; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+        .brand { font-weight: 800; font-size: 1.8rem; letter-spacing: 2px; background: linear-gradient(45deg, #fff, #ccc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .live-status {
+            display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem;
+            background: rgba(229, 9, 20, 0.2); color: var(--primary-color); padding: 6px 14px; border-radius: 30px; border: 1px solid var(--primary-color);
+        }
+        .live-dot { width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.7); } 70% { opacity: 0.6; box-shadow: 0 0 0 10px rgba(229, 9, 20, 0); } 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(229, 9, 20, 0); } }
+
+        /* --- MAIN PLAYER SECTION --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; padding: 20px; }
         
-        .nav-item {
-            width: 100%; padding: 15px 0; display: flex; align-items: center; cursor: pointer;
-            color: #888; transition: 0.2s; padding-left: 28px;
-        }
-        .nav-item:hover, .nav-item.active { color: var(--accent); background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent); }
-        .nav-icon { width: 24px; height: 24px; fill: currentColor; flex-shrink: 0; }
-        .nav-text { margin-left: 15px; font-weight: 600; white-space: nowrap; opacity: 0; transition: 0.2s; }
-        .sidebar:hover .nav-text { opacity: 1; }
-
-        /* --- MAIN CONTENT --- */
-        .main-area { flex: 1; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding: 20px; position: relative; }
-
-        /* PLAYER WRAPPER */
-        .player-wrapper {
-            width: 100%; max-width: 1100px; aspect-ratio: 16/9;
-            background: #000; border-radius: 12px; overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            position: relative;
+        .player-container {
+            position: relative; width: 100%; max-width: 1100px; aspect-ratio: 16/9;
+            border-radius: 16px; overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            background: #000; border: 1px solid var(--glass-border);
         }
 
-        #twitch-player { width: 100%; height: 100%; position: absolute; z-index: 1; }
+        #twitch-player { width: 100%; height: 100%; }
 
-        /* --- SKELETON LOADER (Server Switch Effect) --- */
-        .skeleton-loader {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #111; z-index: 5; display: none;
-        }
-        .shimmer {
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, #111 0%, #222 50%, #111 100%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-
-        /* --- SERVER SELECTOR --- */
-        .server-bar {
-            width: 100%; max-width: 1100px; margin-top: 15px;
-            display: flex; gap: 10px; flex-wrap: wrap;
-        }
-        .server-btn {
-            background: var(--surface); color: #ccc; border: 1px solid #444;
-            padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px;
-            display: flex; align-items: center; gap: 8px; transition: 0.2s;
-        }
-        .server-btn:hover { background: #333; }
-        .server-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 10px rgba(37, 99, 235, 0.4); }
-        .indicator { width: 8px; height: 8px; background: #0f0; border-radius: 50%; display: none; }
-        .server-btn.active .indicator { display: block; }
-
-        /* --- MATCH INFO --- */
-        .info-box {
-            width: 100%; max-width: 1100px; margin-top: 20px;
-            background: var(--surface); padding: 20px; border-radius: 10px;
-        }
-        .match-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
-        .match-meta { color: #888; font-size: 0.9rem; display: flex; gap: 15px; }
-        .live-badge { background: #cc0000; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; }
-
-        /* --- FLOATING HEARTS ANIMATION --- */
-        .floating-heart {
-            position: absolute; bottom: 80px; right: 20px; width: 30px;
-            animation: floatUp 2s ease-out forwards; pointer-events: none; z-index: 20;
-        }
-        @keyframes floatUp { 
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-150px) scale(1.5); opacity: 0; }
-        }
-
-        /* Heart Button */
-        .heart-trigger-btn {
-            position: absolute; bottom: 80px; right: 20px;
-            background: rgba(0,0,0,0.6); border: 1px solid #444; border-radius: 50%;
-            width: 45px; height: 45px; cursor: pointer; z-index: 25;
-            display: flex; justify-content: center; align-items: center; transition: 0.2s;
-        }
-        .heart-trigger-btn:hover { transform: scale(1.1); background: rgba(255,0,0,0.2); border-color: red; }
-        .heart-trigger-btn svg { fill: #fff; width: 24px; transition: 0.2s; }
-        .heart-trigger-btn:active svg { fill: red; transform: scale(0.8); }
-
-        /* --- OVERLAYS (Offline/Watermark) --- */
+        /* --- PREMIUM OFFLINE SCREEN --- */
         #offline-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, #222 0%, #000 100%);
-            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 4;
+            background: var(--glass-bg); backdrop-filter: blur(15px);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10;
+            text-align: center; padding: 40px;
         }
-        .watermark { position: absolute; top: 20px; right: 20px; width: 40px; opacity: 0.6; z-index: 10; pointer-events: none; }
-
-        /* Controls Bar (Custom) */
-        .controls-bar {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
-            display: flex; align-items: center; padding: 0 15px; z-index: 10; opacity: 0; transition: opacity 0.3s;
-        }
-        .player-wrapper:hover .controls-bar { opacity: 1; }
-        .icon-btn { background: none; border: none; color: white; cursor: pointer; padding: 8px; }
+        .offline-logo-box { width: 100px; height: 100px; border-radius: 50%; background: #000; padding: 5px; border: 2px solid var(--primary-color); margin-bottom: 25px; box-shadow: 0 0 30px rgba(229, 9, 20, 0.4); }
+        .offline-logo-box img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .offline-title { font-size: 3rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -1px; }
+        .offline-subtitle { font-size: 1.2rem; font-weight: 300; color: #aaa; margin-bottom: 35px; letter-spacing: 1px; }
         
+        .cta-buttons { display: flex; gap: 20px; }
+        .cta-btn {
+            text-decoration: none; padding: 12px 28px; border-radius: 50px; font-weight: 600; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 10px; transition: all 0.3s ease;
+        }
+        .btn-primary { background: var(--primary-color); color: white; border: 1px solid var(--primary-color); }
+        .btn-primary:hover { background: transparent; color: var(--primary-color); box-shadow: 0 0 20px rgba(229, 9, 20, 0.4); }
+        .btn-secondary { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: #fff; }
+        .cta-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        /* --- SLEEK CONTROLS BAR --- */
+        .controls-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            padding: 20px 25px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            opacity: 0; transition: opacity 0.4s ease; z-index: 20;
+        }
+        .player-container:hover .controls-overlay { opacity: 1; }
+
+        .controls-bar {
+            display: flex; align-items: center; gap: 20px;
+            background: var(--glass-bg); backdrop-filter: blur(10px);
+            padding: 10px 20px; border-radius: 50px; border: 1px solid var(--glass-border);
+        }
+        .icon-btn { background: none; border: none; color: #fff; cursor: pointer; display: flex; align-items: center; transition: 0.2s; padding: 5px; }
+        .icon-btn:hover { color: var(--primary-color); transform: scale(1.1); }
+        .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        
+        .vol-slider-box { display: flex; align-items: center; gap: 10px; width: 0; overflow: hidden; transition: width 0.3s ease; }
+        .vol-container:hover .vol-slider-box { width: 100px; }
+        input[type=range] { width: 100%; height: 4px; accent-color: var(--primary-color); cursor: pointer; }
+
+        /* --- MATCH INFO FOOTER --- */
+        .match-footer { margin-top: 25px; text-align: center; max-width: 800px; }
+        .match-headline { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+        .match-sub { font-size: 0.9rem; color: #888; font-weight: 400; letter-spacing: 1px; }
+
         @media (max-width: 768px) {
-            .sidebar { width: 0; overflow: hidden; } /* Hide sidebar on mobile */
-            .main-area { padding: 0; }
-            .player-wrapper { border-radius: 0; }
-            .server-bar, .info-box { padding: 10px; width: 100%; }
+            .navbar { padding: 15px 20px; }
+            .brand { font-size: 1.4rem; }
+            .controls-overlay { opacity: 1; padding: 10px; }
+            .controls-bar { padding: 8px 15px; gap: 15px; }
+            .offline-title { font-size: 2rem; }
+            .offline-subtitle { font-size: 1rem; }
+            .cta-buttons { flex-direction: column; gap: 10px; width: 100%; max-width: 250px; }
+            .cta-btn { justify-content: center; width: 100%; }
+            .match-headline { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="sidebar">
-        <div class="nav-item active">
-            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            <span class="nav-text">Home</span>
-        </div>
-        <div class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-            <span class="nav-text">Live</span>
-        </div>
-        <div class="nav-item">
-            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-            <span class="nav-text">Highlights</span>
+    <div class="cinema-bg"></div>
+
+    <nav class="navbar">
+        <div class="brand">CRIC HD CINEMA</div>
+        <div class="live-status" id="liveStatus" style="display:none;">
+            <div class="live-dot"></div> LIVE NOW
         </div>
     </nav>
 
-    <div class="main-area">
+    <div class="main-content">
         
-        <div class="player-wrapper" id="pWrapper">
-            
-            <div class="skeleton-loader" id="skelLoader"><div class="shimmer"></div></div>
-
-            <img class="watermark" src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="Logo">
-
+        <div class="player-container">
             <div id="offline-overlay">
-                <h2 style="color:#ffcc00; font-weight:800; font-size:2rem;">STREAM OFFLINE</h2>
-                <p style="color:#888;">Switch Server below or check back later.</p>
+                <div class="offline-logo-box">
+                    <img src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="Logo">
+                </div>
+                <h1 class="offline-title">BROADCAST OFFLINE</h1>
+                <p class="offline-subtitle">The stream will begin momentarily. Stay tuned.</p>
+                
+                <div class="cta-buttons">
+                    <a href="https://t.me/cric_hd_live" target="_blank" class="cta-btn btn-primary">
+                        <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.5 8.5l-2 9.5c-.1.5-.4.6-.8.4l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4v-4.6l8.3-7.5c.4-.3-.1-.5-.6-.2L6.8 11.6 2.4 10.2c-1-.3-1-1 .2-1.5l14.9-5.7c.7-.3 1.3 0 1 1.5z"/></svg>
+                        Telegram Updates
+                    </a>
+                    <a href="https://www.facebook.com/profile.php?id=61585476940061" target="_blank" class="cta-btn btn-secondary">
+                        <svg viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02z"/></svg>
+                        Facebook Page
+                    </a>
+                </div>
             </div>
 
             <div id="twitch-player"></div>
 
-            <div class="controls-bar">
-                <button class="icon-btn" id="playBtn">▶</button>
-                <button class="icon-btn" id="muteBtn">🔊</button>
-                <div style="flex:1"></div>
-                <button class="icon-btn" id="fsBtn">⛶</button>
-            </div>
+            <div class="controls-overlay">
+                <div class="controls-bar">
+                    <button class="icon-btn" id="playBtn">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                    
+                    <div class="vol-container" style="display:flex; align-items:center;">
+                        <button class="icon-btn" id="muteBtn">
+                            <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+                        </button>
+                        <div class="vol-slider-box">
+                            <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5">
+                        </div>
+                    </div>
 
-            <button class="heart-trigger-btn" id="heartBtn" onclick="sendHeart()">
-                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            </button>
+                    <div style="flex:1"></div> <button class="icon-btn" id="fsBtn">
+                        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="server-bar">
-            <div class="server-btn active" onclick="switchServer(1, this)">
-                <div class="indicator"></div> Server 1 (HD)
-            </div>
-            <div class="server-btn" onclick="switchServer(2, this)">
-                <div class="indicator"></div> Server 2 (Backup)
-            </div>
-            <div class="server-btn" onclick="switchServer(3, this)">
-                <div class="indicator"></div> Server 3 (SD)
-            </div>
-        </div>
-
-        <div class="info-box">
-            <div class="match-title">India Tour of England 2026 - 1st Test</div>
-            <div class="match-meta">
-                <span class="live-badge">LIVE</span>
-                <span>• English Commentary</span>
-                <span>• 1.2M Viewers</span>
-            </div>
-            <div style="margin-top:15px; border-top:1px solid #333; padding-top:10px; display:flex; gap:10px;">
-                <a href="https://t.me/cric_hd_live" target="_blank" style="color:#0088cc; text-decoration:none; font-size:14px; font-weight:bold;">Join Telegram</a>
-                <span style="color:#444">|</span>
-                <a href="https://www.facebook.com/profile.php?id=61585476940061" target="_blank" style="color:#1877F2; text-decoration:none; font-size:14px; font-weight:bold;">Facebook Page</a>
-            </div>
+        <div class="match-footer">
+            <div class="match-headline">Premium Live Cricket Streaming</div>
+            <div class="match-sub">Experience the game in High Definition without interruptions.</div>
         </div>
 
     </div>
@@ -214,55 +187,36 @@
   };
   var player = new Twitch.Player("twitch-player", options);
   
-  const loader = document.getElementById('skelLoader');
   const offlineOverlay = document.getElementById('offline-overlay');
+  const liveStatus = document.getElementById('liveStatus');
   const playBtn = document.getElementById('playBtn');
   const muteBtn = document.getElementById('muteBtn');
   const fsBtn = document.getElementById('fsBtn');
-  const wrapper = document.getElementById('pWrapper');
+  const volRange = document.getElementById('volRange');
+  const playerContainer = document.querySelector('.player-container');
 
-  // --- FLOATING HEARTS LOGIC ---
-  function sendHeart() {
-      const heart = document.createElement('div');
-      heart.innerHTML = '<svg viewBox="0 0 24 24" style="fill:#e50914;width:100%;height:100%"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
-      heart.className = 'floating-heart';
-      
-      // Random position slightly left or right
-      const randomX = (Math.random() - 0.5) * 40;
-      heart.style.right = (20 + randomX) + 'px';
-      
-      wrapper.appendChild(heart);
-      
-      // Remove after animation
-      setTimeout(() => { heart.remove(); }, 2000);
-  }
+  // Icons
+  const iPlay = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+  const iPause = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+  const iMute = '<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
+  const iUnmute = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
 
-  // --- SERVER SWITCH LOGIC ---
-  function switchServer(id, btn) {
-      // 1. Activate Button UI
-      document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  player.addEventListener(Twitch.Player.READY, () => { player.setVolume(0.5); });
+  player.addEventListener(Twitch.Player.ONLINE, () => { offlineOverlay.style.display = "none"; liveStatus.style.display = "flex"; });
+  player.addEventListener(Twitch.Player.OFFLINE, () => { offlineOverlay.style.display = "flex"; liveStatus.style.display = "none"; });
 
-      // 2. Show Skeleton Loader
-      loader.style.display = 'block';
-
-      // 3. Simulate Server Change (Reload Stream)
-      setTimeout(() => {
-          const currentChannel = player.getChannel();
-          player.setChannel(currentChannel); // Reloads same channel for demo
-          loader.style.display = 'none';
-      }, 1500); // 1.5 sec delay for effect
-  }
-
-  // Player Events
-  player.addEventListener(Twitch.Player.ONLINE, () => { offlineOverlay.style.display = "none"; });
-  player.addEventListener(Twitch.Player.OFFLINE, () => { offlineOverlay.style.display = "flex"; });
-
-  // Basic Controls
-  playBtn.addEventListener('click', () => { player.isPaused() ? player.play() : player.pause(); });
-  muteBtn.addEventListener('click', () => { player.getMuted() ? player.setMuted(false) : player.setMuted(true); });
-  fsBtn.addEventListener('click', () => { document.fullscreenElement ? document.exitFullscreen() : wrapper.requestFullscreen(); });
-
+  playBtn.addEventListener('click', () => {
+      if(player.isPaused()){ player.play(); playBtn.innerHTML = iPause; }
+      else { player.pause(); playBtn.innerHTML = iPlay; }
+  });
+  muteBtn.addEventListener('click', () => {
+      if(player.getMuted()){ player.setMuted(false); muteBtn.innerHTML = iUnmute; }
+      else { player.setMuted(true); muteBtn.innerHTML = iMute; }
+  });
+  fsBtn.addEventListener('click', () => {
+      !document.fullscreenElement ? playerContainer.requestFullscreen() : document.exitFullscreen();
+  });
+  volRange.addEventListener('input', (e) => { player.setVolume(parseFloat(e.target.value)); });
 </script>
 </body>
 </html>
