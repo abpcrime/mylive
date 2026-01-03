@@ -3,29 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>CricHD Player - Live</title>
+    <title>CricHD Premium Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://player.twitch.tv/js/embed/v1.js"></script>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        body { margin: 0; background: #050505; color: white; font-family: 'Rajdhani', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         
         .player-container {
             position: relative;
             width: 100%;
-            max-width: 900px;
+            max-width: 950px;
             aspect-ratio: 16/9;
-            border: 2px solid #333;
+            border: 1px solid #333;
             background: #000;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+            overflow: hidden; /* Rounded corners ke liye */
+            border-radius: 8px;
         }
 
         #twitch-player { width: 100%; height: 100%; }
+
+        /* --- LIVE BADGE (Top Left) --- */
+        .live-badge {
+            position: absolute; top: 15px; left: 15px;
+            background: rgba(255, 0, 0, 0.9);
+            color: white; padding: 2px 10px;
+            font-size: 14px; font-weight: bold;
+            border-radius: 4px; z-index: 15;
+            display: none; /* JS se show hoga */
+            box-shadow: 0 0 10px red;
+            letter-spacing: 1px;
+        }
 
         /* --- OFFLINE SCREEN STYLES --- */
         #offline-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* Premium Dark Gradient */
-            background: radial-gradient(circle, #2a2a2a 0%, #000000 90%);
+            background: radial-gradient(circle at center, #1f1f1f 0%, #000000 100%);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -37,164 +51,146 @@
         }
 
         .signal-container {
-            position: relative;
-            width: 130px;
-            height: 130px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: relative; width: 120px; height: 120px; margin-bottom: 20px;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* --- LOGO CSS --- */
+        /* LOGO */
         .brand-logo {
-            width: 90px; 
-            height: 90px;
-            background: #000; 
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            width: 80px; height: 80px;
+            background: #000; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
             z-index: 5;
-            box-shadow: 0 0 25px rgba(255, 204, 0, 0.7); /* Glow effect */
-            border: 3px solid #fff;
-            overflow: hidden;
-            position: relative;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.4);
+            border: 2px solid rgba(255,255,255,0.8);
+            overflow: hidden; position: relative;
         }
-
-        .brand-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
+        .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
 
         /* Animation Rings */
         .signal-ring {
-            position: absolute;
-            width: 100%; height: 100%;
-            border: 2px solid rgba(255, 204, 0, 0.5);
-            border-radius: 50%;
-            opacity: 0;
-            animation: ripple 2s infinite ease-out;
-            top: 0; left: 0;
-            box-sizing: border-box;
+            position: absolute; width: 100%; height: 100%;
+            border: 2px solid rgba(255, 204, 0, 0.5); border-radius: 50%;
+            opacity: 0; animation: ripple 2s infinite ease-out;
+            top: 0; left: 0; box-sizing: border-box;
         }
-
         .signal-ring:nth-child(2) { animation-delay: 0.6s; }
         .signal-ring:nth-child(3) { animation-delay: 1.2s; }
-
         @keyframes ripple {
             0% { transform: scale(0.65); opacity: 1; border-width: 4px; }
-            100% { transform: scale(1.8); opacity: 0; border-width: 0px; }
+            100% { transform: scale(2.0); opacity: 0; border-width: 0px; }
         }
         
         .engaging-font {
-            font-family: "Arial Black", "Impact", sans-serif;
-            font-size: 5vw; 
-            text-transform: uppercase;
-            color: #fff;
-            margin: 0;
-            text-shadow: 0 3px 6px rgba(0,0,0,0.9);
+            font-size: 40px; text-transform: uppercase; color: #fff;
+            margin: 0; letter-spacing: 2px; font-weight: 700;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
         }
-
         .sub-text {
-            font-family: sans-serif; font-size: 1.2vw; color: #ccc; margin-top: 10px;
-            text-transform: uppercase; letter-spacing: 2px;
-            background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px;
+            font-size: 16px; color: #aaa; margin-top: 5px; margin-bottom: 25px;
+            text-transform: uppercase; letter-spacing: 3px; font-weight: 500;
         }
 
-        /* --- SOCIAL BUTTONS STYLES (NEW) --- */
-        .social-box {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
+        /* --- SOCIAL BUTTONS --- */
+        .social-box { display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
         .btn-social {
             display: flex; align-items: center; gap: 8px;
-            padding: 10px 20px; border-radius: 30px;
-            text-decoration: none; font-weight: bold; font-size: 14px;
-            color: white; transition: transform 0.2s, box-shadow 0.2s;
-            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 18px; border-radius: 50px;
+            text-decoration: none; font-weight: 600; font-size: 14px;
+            color: white; transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
         }
-
-        .btn-social:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-
-        .btn-tg { background: linear-gradient(45deg, #0088cc, #005f8f); } 
-        .btn-fb { background: linear-gradient(45deg, #1877F2, #105cb6); }
-
+        .btn-social:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); background: rgba(255,255,255,0.15); }
+        .btn-tg { border-color: #0088cc; } 
+        .btn-fb { border-color: #1877F2; }
         .btn-social svg { width: 18px; height: 18px; fill: white; }
-        
-        /* Controls */
+
+        /* --- GLASS CONTROLS (NEW) --- */
         .custom-controls {
             position: absolute; bottom: 0; left: 0; width: 100%;
-            background: rgba(0, 0, 0, 0.85); padding: 10px; box-sizing: border-box;
-            display: flex; align-items: center; gap: 10px; z-index: 20;
+            /* The Glass Effect */
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            padding: 10px 15px; box-sizing: border-box;
+            display: flex; align-items: center; gap: 12px; z-index: 20;
             opacity: 0; transition: opacity 0.3s;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
         .player-container:hover .custom-controls { opacity: 1; }
 
-        @media (max-width: 768px) {
-            .custom-controls { opacity: 1; padding: 8px; }
-            .engaging-font { font-size: 26px; } 
-            .sub-text { font-size: 11px; }
-            .signal-container { width: 100px; height: 100px; }
-            .brand-logo { width: 70px; height: 70px; }
-            button { padding: 5px 8px; font-size: 12px; }
-            .btn-social { padding: 8px 15px; font-size: 12px; }
-            .btn-social svg { width: 16px; height: 16px; }
+        /* Controls styling */
+        button, select {
+            background: transparent; color: #ddd; border: 1px solid rgba(255,255,255,0.2);
+            padding: 5px 12px; cursor: pointer; border-radius: 4px; font-size: 14px;
+            font-family: 'Rajdhani', sans-serif; font-weight: 600; text-transform: uppercase;
+            transition: 0.2s;
         }
+        button:hover, select:hover { background: #ffcc00; color: #000; border-color: #ffcc00; }
+        
+        /* Icon Buttons (Refresh/Fullscreen) */
+        .icon-btn { padding: 5px 8px; font-size: 16px; }
 
-        button, select, input {
-            background: #333; color: white; border: 1px solid #555;
-            padding: 5px 10px; cursor: pointer; border-radius: 4px; font-size: 13px;
+        input[type=range] { width: 80px; accent-color: #ffcc00; height: 4px; cursor: pointer; }
+        select { background: #000; }
+
+        /* Status & Mobile */
+        @media (max-width: 768px) {
+            .custom-controls { opacity: 1; padding: 8px 10px; gap: 8px; backdrop-filter: blur(15px); background: rgba(0,0,0,0.7); }
+            .engaging-font { font-size: 24px; } 
+            .sub-text { font-size: 12px; }
+            .signal-container { width: 100px; height: 100px; }
+            .brand-logo { width: 65px; height: 65px; }
+            button { font-size: 11px; padding: 4px 8px; }
+            input[type=range] { width: 50px; }
+            .btn-social { padding: 8px 12px; font-size: 12px; }
         }
-        #statusText { margin-left: auto; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="player-container">
+    <div class="player-container" id="playerContainer">
+        
+        <div id="liveBadge" class="live-badge">● LIVE</div>
+
         <div id="offline-overlay">
             <div class="signal-container">
-                
                 <div class="brand-logo">
-                    <img src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" 
-                         alt="CricHD Logo" 
-                         style="width: 100%; height: 100%; object-fit: cover;">
+                    <img src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="Logo">
                 </div>
-                
                 <div class="signal-ring"></div>
                 <div class="signal-ring"></div>
             </div>
             
             <h1 class="engaging-font">Stream Offline</h1>
-            <div class="sub-text">We will be live shortly</div>
+            <div class="sub-text">Waiting for Signal...</div>
 
             <div class="social-box">
                 <a href="https://t.me/cric_hd_live" target="_blank" class="btn-social btn-tg">
-                    <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                    Telegram
+                    <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg> Telegram
                 </a>
-
                 <a href="https://www.facebook.com/profile.php?id=61585476940061" target="_blank" class="btn-social btn-fb">
-                    <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm3 8h-1.35c-.538 0-.65.221-.65.778V10h2l-.209 2H13v7h-3v-7H8v-2h2V7.692C10 5.923 10.931 5 13.029 5 13.82 5 14.654 5.163 15 5.25v2.75z"/></svg>
-                    Facebook
+                    <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm3 8h-1.35c-.538 0-.65.221-.65.778V10h2l-.209 2H13v7h-3v-7H8v-2h2V7.692C10 5.923 10.931 5 13.029 5 13.82 5 14.654 5.163 15 5.25v2.75z"/></svg> Facebook
                 </a>
             </div>
-            </div>
+        </div>
 
         <div id="twitch-player"></div>
 
         <div class="custom-controls">
             <button id="playBtn">Play</button>
             <button id="muteBtn">Unmute</button>
+            <button id="reloadBtn" class="icon-btn" title="Reload Stream">↻</button>
+            
             <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5">
+            
             <select id="qualitySelect"><option value="auto">Auto</option></select>
-            <span id="statusText" style="color: #0f0;">Checking...</span>
+            
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+                <span id="statusText" style="font-size: 12px; color: #aaa; letter-spacing: 1px;">CONNECTING...</span>
+                <button id="fsBtn" class="icon-btn" title="Fullscreen">⛶</button>
+            </div>
         </div>
     </div>
 
@@ -204,12 +200,18 @@
         parent: ["abpcrime.github.io"], autoplay: true, muted: true, controls: false 
       };
       var player = new Twitch.Player("twitch-player", options);
+      
+      // Elements selection
       const playBtn = document.getElementById('playBtn');
       const muteBtn = document.getElementById('muteBtn');
+      const reloadBtn = document.getElementById('reloadBtn');
+      const fsBtn = document.getElementById('fsBtn');
       const volRange = document.getElementById('volRange');
       const qualitySelect = document.getElementById('qualitySelect');
       const statusText = document.getElementById('statusText');
       const offlineOverlay = document.getElementById('offline-overlay');
+      const liveBadge = document.getElementById('liveBadge');
+      const container = document.getElementById('playerContainer');
 
       player.addEventListener(Twitch.Player.READY, () => {
           player.setVolume(0.5); 
@@ -221,23 +223,51 @@
       });
 
       player.addEventListener(Twitch.Player.ONLINE, () => {
-          statusText.innerText = "● LIVE"; statusText.style.color = "red";
+          statusText.innerText = "LIVE SIGNAL"; 
+          statusText.style.color = "#ff3333";
+          statusText.style.textShadow = "0 0 8px red";
           offlineOverlay.style.display = "none";
+          liveBadge.style.display = "block"; // Show red badge
       });
 
       player.addEventListener(Twitch.Player.OFFLINE, () => {
-          statusText.innerText = "OFFLINE"; statusText.style.color = "#ffcc00";
+          statusText.innerText = "STANDBY"; 
+          statusText.style.color = "#ffcc00";
+          statusText.style.textShadow = "none";
           offlineOverlay.style.display = "flex";
+          liveBadge.style.display = "none";
       });
 
+      // Play/Pause
       playBtn.addEventListener('click', () => {
           if (player.isPaused()) { player.play(); playBtn.innerText = "Pause"; } 
           else { player.pause(); playBtn.innerText = "Play"; }
       });
+
+      // Mute/Unmute
       muteBtn.addEventListener('click', () => {
           if (player.getMuted()) { player.setMuted(false); muteBtn.innerText = "Mute"; } 
           else { player.setMuted(true); muteBtn.innerText = "Unmute"; }
       });
+
+      // Reload Button Logic
+      reloadBtn.addEventListener('click', () => {
+          // Player ko wapas reload karega bina page refresh kiye
+          const currentChannel = player.getChannel();
+          player.setChannel(currentChannel);
+      });
+
+      // Fullscreen Logic
+      fsBtn.addEventListener('click', () => {
+          if (!document.fullscreenElement) {
+              container.requestFullscreen().catch(err => {
+                  alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+              });
+          } else {
+              document.exitFullscreen();
+          }
+      });
+
       volRange.addEventListener('input', (e) => { player.setVolume(parseFloat(e.target.value)); });
       qualitySelect.addEventListener('change', (e) => { player.setQuality(e.target.value); });
     </script>
