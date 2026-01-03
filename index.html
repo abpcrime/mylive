@@ -3,269 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>CricHD Premium Stream</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>CricHD Broadcast Stream</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://player.twitch.tv/js/embed/v1.js"></script>
     <style>
         /* --- RESET & BASE --- */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body { 
-            margin: 0; background: #080808; color: #fff; 
-            font-family: 'Montserrat', sans-serif; 
+            margin: 0; background: #050505; color: #fff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             display: flex; justify-content: center; align-items: center; 
             height: 100vh; overflow: hidden; user-select: none;
         }
 
-        /* --- CINEMA INTRO --- */
-        #app-intro {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 9999;
-            display: flex; justify-content: center; align-items: center; flex-direction: column;
-            animation: fadeOut 0.5s ease-in-out 2.5s forwards;
-            pointer-events: none;
-        }
-        .intro-logo { font-size: 3rem; font-weight: 800; letter-spacing: 2px; color: #ffcc00; transform: scale(0); animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        .intro-sub { color: #666; font-size: 0.9rem; margin-top: 10px; opacity: 0; animation: fadeInUp 0.5s ease 0.5s forwards; }
-
-        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
-
-        /* --- PLAYER WRAPPER --- */
+        /* --- PLAYER FRAME --- */
         .player-wrapper {
             position: relative; width: 100%; max-width: 1000px; aspect-ratio: 16/9;
-            background: #000; border-radius: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            overflow: hidden; group;
+            background: #000; border-radius: 8px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            overflow: hidden; border: 1px solid #222;
         }
 
         #twitch-player { width: 100%; height: 100%; }
 
-        /* --- OVERLAY INFO (Top) --- */
-        .top-overlay {
-            position: absolute; top: 0; left: 0; width: 100%;
-            padding: 20px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            display: flex; justify-content: space-between; align-items: flex-start;
-            z-index: 15; pointer-events: none;
+        /* --- INTRO ANIMATION --- */
+        #intro-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            animation: introFade 3s forwards; pointer-events: none;
         }
-        
-        .live-tag {
-            background: #e50914; color: white; padding: 4px 10px;
-            font-size: 11px; font-weight: 800; border-radius: 3px;
-            display: flex; align-items: center; gap: 5px;
-            box-shadow: 0 0 10px rgba(229, 9, 20, 0.6);
-        }
-        .live-blink { width: 6px; height: 6px; background: #fff; border-radius: 50%; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.4; } }
+        .intro-text { font-family: 'Teko', sans-serif; font-size: 4rem; color: #ffcc00; letter-spacing: 5px; opacity: 0; animation: textScale 2s ease-out forwards; }
+        @keyframes introFade { 0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+        @keyframes textScale { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
-        .viewer-count {
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-            padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-            color: #ddd; display: flex; align-items: center; gap: 6px;
-            border: 1px solid rgba(255,255,255,0.1);
+        /* --- TOP OVERLAY --- */
+        .top-bar {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 15px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 20; pointer-events: none; opacity: 0; transition: opacity 0.3s;
         }
+        .player-wrapper:hover .top-bar { opacity: 1; }
 
-        .watermark { width: 40px; opacity: 0.7; }
-        .watermark img { width: 100%; }
+        .live-indicator {
+            background: #cc0000; color: #fff; padding: 2px 8px; font-size: 11px; font-weight: bold;
+            border-radius: 2px; display: flex; align-items: center; gap: 5px; font-family: 'Arial', sans-serif;
+        }
+        .rec-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .signal-bars { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
+        .bar { width: 3px; background: #fff; opacity: 0.5; }
+        .bar:nth-child(1) { height: 40%; background: #0f0; opacity: 1; }
+        .bar:nth-child(2) { height: 60%; background: #0f0; opacity: 1; }
+        .bar:nth-child(3) { height: 80%; background: #0f0; opacity: 1; }
+        .bar:nth-child(4) { height: 100%; background: #0f0; opacity: 1; }
+
+        /* --- LIVE CHAT OVERLAY --- */
+        .chat-overlay {
+            position: absolute; bottom: 80px; left: 15px; width: 250px; height: 200px;
+            background: rgba(0, 0, 0, 0.6); 
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%);
+            mask-image: linear-gradient(to bottom, transparent, black 20%);
+            overflow: hidden; display: none; flex-direction: column; justify-content: flex-end;
+            padding: 10px; border-radius: 8px; pointer-events: none; z-index: 15;
+        }
+        .chat-msg { font-size: 13px; margin-bottom: 5px; text-shadow: 1px 1px 2px #000; animation: slideIn 0.3s ease; }
+        .c-name { color: #ffcc00; font-weight: bold; margin-right: 5px; }
+        .c-text { color: #fff; }
+        @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* --- CUSTOM CONTEXT MENU --- */
+        #ctx-menu {
+            position: absolute; background: rgba(20,20,20,0.95); border: 1px solid #444;
+            border-radius: 5px; padding: 5px 0; width: 160px; display: none; z-index: 999;
+            backdrop-filter: blur(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .ctx-item {
+            padding: 8px 15px; font-size: 13px; color: #ccc; cursor: pointer; transition: 0.2s;
+            display: flex; justify-content: space-between;
+        }
+        .ctx-item:hover { background: #333; color: #fff; }
+        .ctx-line { height: 1px; background: #444; margin: 3px 0; }
 
         /* --- OFFLINE SCREEN --- */
         #offline-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1e1e1e 0%, #000 100%);
+            background: radial-gradient(circle, #222 0%, #000 90%);
             display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 10; text-align: center;
+            z-index: 10;
         }
-        .offline-logo { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; margin-bottom: 20px; border: 3px solid #ffcc00; box-shadow: 0 0 30px rgba(255, 204, 0, 0.3); }
-        .offline-logo img { width: 100%; height: 100%; object-fit: cover; }
-        .status-text { font-size: 2rem; font-weight: 800; color: #fff; text-transform: uppercase; margin: 0; }
-        .status-desc { color: #888; font-size: 0.9rem; margin-bottom: 25px; letter-spacing: 1px; }
+        .offline-badge { font-family: 'Teko', sans-serif; font-size: 2rem; color: #ffcc00; border: 2px solid #ffcc00; padding: 5px 20px; text-transform: uppercase; margin-bottom: 10px; }
+        .btn-telegram { background: #0088cc; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; font-size: 14px; margin-top: 20px; display: flex; align-items: center; gap: 8px; }
 
-        .btn-action {
-            padding: 10px 25px; background: rgba(255,255,255,0.1);
-            color: #fff; text-decoration: none; border-radius: 30px;
-            font-size: 13px; font-weight: 600; margin: 5px;
-            display: inline-flex; align-items: center; gap: 8px;
-            border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;
-        }
-        .btn-action:hover { background: #ffcc00; color: #000; transform: translateY(-3px); border-color: #ffcc00; }
-        .btn-action svg { width: 16px; height: 16px; fill: currentColor; }
-
-        /* --- CONTROLS BAR (Bottom) --- */
-        .controls-gradient {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 120px;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
-            z-index: 19; pointer-events: none; opacity: 0; transition: opacity 0.3s;
-        }
-        .player-wrapper:hover .controls-gradient { opacity: 1; }
-
+        /* --- CONTROLS --- */
         .controls-bar {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            padding: 15px 20px; display: flex; align-items: center; gap: 15px;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+            display: flex; align-items: center; padding: 0 15px; gap: 15px;
             z-index: 20; opacity: 0; transition: opacity 0.3s;
         }
         .player-wrapper:hover .controls-bar { opacity: 1; }
 
-        .c-btn {
-            background: none; border: none; color: #fff; cursor: pointer;
-            padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            transition: 0.2s; position: relative;
-        }
-        .c-btn:hover { background: rgba(255,255,255,0.2); }
-        .c-btn svg { width: 24px; height: 24px; fill: #fff; }
+        .icon-btn { background: none; border: none; color: #ddd; cursor: pointer; padding: 5px; transition: 0.2s; }
+        .icon-btn:hover { color: #fff; transform: scale(1.1); }
+        .icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+        
+        /* Chat Toggle Button Active State */
+        .chat-active { color: #ffcc00 !important; }
 
-        /* Volume Slider Group */
-        .vol-group { display: flex; align-items: center; gap: 10px; }
-        .vol-slider {
-            width: 0; overflow: hidden; transition: width 0.3s; display: flex; align-items: center;
-        }
-        .vol-group:hover .vol-slider { width: 80px; }
-        input[type=range] { width: 100%; height: 4px; border-radius: 2px; accent-color: #ffcc00; cursor: pointer; }
+        input[type=range] { width: 80px; accent-color: #ffcc00; height: 3px; cursor: pointer; }
+        .qual-btn { background: #333; color: #fff; border: 1px solid #555; padding: 2px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; }
 
-        .spacer { flex: 1; }
-
-        /* SETTINGS MENU (YouTube Style) */
-        .settings-menu {
-            position: absolute; bottom: 60px; right: 20px;
-            background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px);
-            border-radius: 8px; width: 150px; padding: 5px 0;
-            display: none; flex-direction: column;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-            animation: slideUp 0.2s ease;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .quality-opt {
-            padding: 10px 15px; font-size: 13px; color: #ccc; cursor: pointer; transition: 0.2s;
-            display: flex; justify-content: space-between;
-        }
-        .quality-opt:hover { background: rgba(255,255,255,0.1); color: #ffcc00; }
-        .quality-opt.active { color: #ffcc00; font-weight: bold; }
-
-        /* TOAST NOTIFICATION */
+        /* Toast */
         .toast {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.7); padding: 15px 25px; border-radius: 50px;
-            backdrop-filter: blur(5px); display: flex; align-items: center; gap: 10px;
-            font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-            border: 1px solid rgba(255,255,255,0.1);
+            position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 20px;
+            font-size: 12px; color: #fff; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: 1px solid #444;
         }
-        .toast svg { width: 20px; height: 20px; fill: #ffcc00; }
 
-        /* Mobile */
         @media (max-width: 768px) {
-            .controls-bar { opacity: 1; padding: 10px; }
-            .controls-gradient { opacity: 1; }
-            .vol-slider { width: 60px; }
-            .viewer-count { font-size: 10px; padding: 4px 8px; }
-            .intro-logo { font-size: 2rem; }
-            .status-text { font-size: 1.5rem; }
+            .controls-bar, .top-bar { opacity: 1; }
+            .chat-overlay { width: 60%; bottom: 60px; height: 150px; }
+            .intro-text { font-size: 2.5rem; }
         }
     </style>
 </head>
-<body oncontextmenu="return false;">
-
-<div id="app-intro">
-    <div class="intro-logo">CRIC HD</div>
-    <div class="intro-sub">PREMIUM STREAMING</div>
-</div>
+<body>
 
 <div class="player-wrapper" id="pWrapper">
     
-    <div class="top-overlay">
-        <div style="display:flex; gap:10px;">
-            <div id="liveBadge" class="live-tag" style="display:none;">
-                <div class="live-blink"></div> LIVE
-            </div>
-            <div id="viewCount" class="viewer-count" style="display:none;">
-                👁 12,403
-            </div>
+    <div id="intro-layer"><div class="intro-text">BROADCAST LIVE</div></div>
+
+    <div id="ctx-menu">
+        <div class="ctx-item" onclick="location.reload()">Reload Stream</div>
+        <div class="ctx-item" onclick="copyLink()">Copy Link</div>
+        <div class="ctx-line"></div>
+        <div class="ctx-item" style="font-size:10px; color:#666;">CricHD Player v2.0</div>
+    </div>
+
+    <div class="top-bar">
+        <div class="live-indicator" id="liveTag" style="display:none;">
+            <div class="rec-dot"></div> LIVE
         </div>
-        <div class="watermark">
-            <img src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="">
+        
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="font-size:10px; color:#aaa;">HD 1080p</div>
+            <div class="signal-bars" title="Signal Strength: Excellent">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
         </div>
     </div>
 
-    <div class="toast" id="toastMsg">
-        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> <span>Play</span>
-    </div>
+    <div class="chat-overlay" id="chatBox">
+        </div>
+
+    <div class="toast" id="toast">Settings Saved</div>
 
     <div id="offline-overlay">
-        <div class="offline-logo">
-            <img src="https://lh3.googleusercontent.com/d/1XTp_aF5GuHgqbPEhUQVE8SJwBXs4YUQ8" alt="">
-        </div>
-        <h1 class="status-text">Stream Offline</h1>
-        <p class="status-desc">Broadcast will begin shortly</p>
-        
-        <div>
-            <a href="https://t.me/cric_hd_live" target="_blank" class="btn-action">
-                <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.5 8.5l-2 9.5c-.1.5-.4.6-.8.4l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4v-4.6l8.3-7.5c.4-.3-.1-.5-.6-.2L6.8 11.6 2.4 10.2c-1-.3-1-1 .2-1.5l14.9-5.7c.7-.3 1.3 0 1 1.5z"/></svg> Telegram
-            </a>
-            <a href="https://www.facebook.com/profile.php?id=61585476940061" target="_blank" class="btn-action">
-                <svg viewBox="0 0 24 24"><path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 0 0 8.44-9.9c0-5.53-4.5-10.02-10-10.02z"/></svg> Facebook
-            </a>
-        </div>
+        <div class="offline-badge">Technical Break</div>
+        <div style="color:#aaa; font-size:14px;">Broadcasting will resume shortly</div>
+        <a href="https://t.me/cric_hd_live" target="_blank" class="btn-telegram">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.5 8.5l-2 9.5c-.1.5-.4.6-.8.4l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4v-4.6l8.3-7.5c.4-.3-.1-.5-.6-.2L6.8 11.6 2.4 10.2c-1-.3-1-1 .2-1.5l14.9-5.7c.7-.3 1.3 0 1 1.5z"/></svg>
+            Join Telegram for Updates
+        </a>
     </div>
 
     <div id="twitch-player"></div>
 
-    <div class="settings-menu" id="settingsMenu">
-        <div class="quality-opt active" onclick="changeQual('auto')">Auto</div>
-        </div>
-
-    <div class="controls-gradient"></div>
     <div class="controls-bar">
-        <button class="c-btn" id="playBtn">
+        <button class="icon-btn" id="playBtn">
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </button>
 
-        <div class="vol-group">
-            <button class="c-btn" id="muteBtn">
-                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-            </button>
-            <div class="vol-slider">
-                <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5">
-            </div>
-        </div>
-
-        <div class="spacer"></div>
-
-        <button class="c-btn" id="reloadBtn" title="Reload">
-            <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        <button class="icon-btn" id="muteBtn">
+            <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
         </button>
 
-        <button class="c-btn" id="settingsBtn" title="Quality">
-            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.6zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <input type="range" id="volRange" min="0" max="1" step="0.1" value="0.5">
+
+        <div style="flex:1;"></div>
+
+        <button class="icon-btn" id="chatBtn" title="Toggle Live Chat">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
         </button>
 
-        <button class="c-btn" id="fsBtn">
+        <button class="icon-btn" id="pipBtn" title="Picture-in-Picture">
+            <svg viewBox="0 0 24 24"><path d="M19 11h-8v6h8v-6zm4 8V4.98C23 3.88 22.1 3 21 3H3c-1.1 0-2 .88-2 1.98V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2zm-2 .02H3V4.97h18v14.05z"/></svg>
+        </button>
+
+        <button class="icon-btn" id="fsBtn">
             <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
         </button>
     </div>
 </div>
 
 <script type="text/javascript">
-  // Twitch Init
+  // Twitch Setup
   var options = {
     width: "100%", height: "100%", channel: "bccitv", 
     parent: ["abpcrime.github.io"], autoplay: true, muted: true, controls: false 
   };
   var player = new Twitch.Player("twitch-player", options);
-
-  // DOM Elements
+  
+  // Elements
   const playBtn = document.getElementById('playBtn');
   const muteBtn = document.getElementById('muteBtn');
-  const settingsBtn = document.getElementById('settingsBtn');
-  const settingsMenu = document.getElementById('settingsMenu');
+  const chatBtn = document.getElementById('chatBtn');
+  const pipBtn = document.getElementById('pipBtn');
   const fsBtn = document.getElementById('fsBtn');
   const volRange = document.getElementById('volRange');
   const offlineOverlay = document.getElementById('offline-overlay');
-  const liveBadge = document.getElementById('liveBadge');
-  const viewCount = document.getElementById('viewCount');
-  const toast = document.getElementById('toastMsg');
-  const reloadBtn = document.getElementById('reloadBtn');
+  const liveTag = document.getElementById('liveTag');
+  const chatBox = document.getElementById('chatBox');
+  const toast = document.getElementById('toast');
+  const ctxMenu = document.getElementById('ctx-menu');
   const wrapper = document.getElementById('pWrapper');
 
   // Icons
@@ -274,109 +227,92 @@
   const iMute = '<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>';
   const iUnmute = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>';
 
-  // --- LOGIC ---
-  
-  // Show Toast Notification
-  function showToast(icon, text) {
-      toast.innerHTML = icon + ' ' + text;
-      toast.style.opacity = '1';
-      setTimeout(() => { toast.style.opacity = '0'; }, 1000);
+  // --- FAKE LIVE CHAT LOGIC ---
+  const names = ["Rahul", "Amit", "SkyLover", "ViratFan", "Dhoni7", "CricCrazy", "Rohit45", "IndVsPak", "KingKohli"];
+  const msgs = ["What a shot!", "Sixer!!!", "Wicket coming?", "Love from India ❤️", "Score?", "Out!!", "Opener is good", "Rain expected?", "Jai Hind"];
+  let chatInterval;
+
+  function startChat() {
+      chatInterval = setInterval(() => {
+          let name = names[Math.floor(Math.random() * names.length)];
+          let msg = msgs[Math.floor(Math.random() * msgs.length)];
+          let div = document.createElement('div');
+          div.className = 'chat-msg';
+          div.innerHTML = `<span class="c-name">${name}:</span><span class="c-text">${msg}</span>`;
+          chatBox.appendChild(div);
+          chatBox.scrollTop = chatBox.scrollHeight;
+          if(chatBox.childElementCount > 10) chatBox.removeChild(chatBox.firstChild);
+      }, 1500); // New msg every 1.5 sec
   }
 
-  // Update Fake View Count
-  setInterval(() => {
-      let count = 12000 + Math.floor(Math.random() * 5000);
-      viewCount.innerText = "👁 " + count.toLocaleString();
-  }, 3000);
+  chatBtn.addEventListener('click', () => {
+      if (chatBox.style.display === 'flex') {
+          chatBox.style.display = 'none';
+          chatBtn.classList.remove('chat-active');
+          clearInterval(chatInterval);
+          showToast("Live Chat: Off");
+      } else {
+          chatBox.style.display = 'flex';
+          chatBtn.classList.add('chat-active');
+          startChat();
+          showToast("Live Chat: On");
+      }
+  });
 
-  // Player Events
+  // --- PLAYER EVENTS ---
   player.addEventListener(Twitch.Player.READY, () => {
       player.setVolume(0.5); 
-      updateQualities();
   });
+  player.addEventListener(Twitch.Player.ONLINE, () => { offlineOverlay.style.display = "none"; liveTag.style.display = "flex"; });
+  player.addEventListener(Twitch.Player.OFFLINE, () => { offlineOverlay.style.display = "flex"; liveTag.style.display = "none"; });
 
-  player.addEventListener(Twitch.Player.ONLINE, () => { 
-      offlineOverlay.style.display = "none"; 
-      liveBadge.style.display = "flex"; 
-      viewCount.style.display = "flex";
-  });
-  
-  player.addEventListener(Twitch.Player.OFFLINE, () => { 
-      offlineOverlay.style.display = "flex"; 
-      liveBadge.style.display = "none";
-      viewCount.style.display = "none";
-  });
-
-  // Controls Logic
+  // --- CONTROLS ---
   playBtn.addEventListener('click', () => {
-      if (player.isPaused()) { 
-          player.play(); playBtn.innerHTML = iPause; showToast(iPlay, 'Playing');
-      } else { 
-          player.pause(); playBtn.innerHTML = iPlay; showToast(iPause, 'Paused');
-      }
+      if(player.isPaused()){ player.play(); playBtn.innerHTML = iPause; }
+      else { player.pause(); playBtn.innerHTML = iPlay; }
   });
 
   muteBtn.addEventListener('click', () => {
-      if (player.getMuted()) { 
-          player.setMuted(false); muteBtn.innerHTML = iUnmute; showToast(iUnmute, 'Unmuted');
-      } else { 
-          player.setMuted(true); muteBtn.innerHTML = iMute; showToast(iMute, 'Muted');
+      if(player.getMuted()){ player.setMuted(false); muteBtn.innerHTML = iUnmute; }
+      else { player.setMuted(true); muteBtn.innerHTML = iMute; }
+  });
+
+  pipBtn.addEventListener('click', () => {
+      const video = document.querySelector('iframe').contentWindow.document.querySelector('video');
+      if (video) {
+           // Direct Twitch embed prevents direct video access sometimes due to CORS
+           // So we use a generic Alert if specific browser API fails
+           showToast("PiP Mode requires direct stream access");
+      } else {
+          showToast("PiP not supported in this frame");
       }
   });
 
-  // Settings Menu Logic
-  settingsBtn.addEventListener('click', () => {
-      settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
-      updateQualities();
-  });
-
-  // Close menu when clicking outside
-  document.addEventListener('click', (e) => {
-      if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) {
-          settingsMenu.style.display = 'none';
-      }
-  });
-
-  function updateQualities() {
-      var qualities = player.getQualities();
-      settingsMenu.innerHTML = ''; // clear old
-      // Add Auto
-      let autoDiv = document.createElement('div');
-      autoDiv.className = 'quality-opt';
-      autoDiv.innerText = 'Auto';
-      autoDiv.onclick = () => { player.setQuality('auto'); settingsMenu.style.display='none'; showToast('', 'Quality: Auto'); };
-      settingsMenu.appendChild(autoDiv);
-
-      qualities.forEach(q => {
-          let div = document.createElement('div');
-          div.className = 'quality-opt';
-          div.innerText = q.name;
-          div.onclick = () => { player.setQuality(q.group); settingsMenu.style.display='none'; showToast('', 'Quality: ' + q.name); };
-          settingsMenu.appendChild(div);
-      });
-  }
-
-  // Fullscreen
   fsBtn.addEventListener('click', () => {
-      if (!document.fullscreenElement) { wrapper.requestFullscreen(); } 
-      else { document.exitFullscreen(); }
-  });
-
-  reloadBtn.addEventListener('click', () => {
-      const ch = player.getChannel();
-      player.setChannel(ch);
-      showToast('<svg viewBox="0 0 24 24" style="width:20px;fill:#fff"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>', 'Reloading');
+      if (!document.fullscreenElement) wrapper.requestFullscreen();
+      else document.exitFullscreen();
   });
 
   volRange.addEventListener('input', (e) => { player.setVolume(parseFloat(e.target.value)); });
-  
-  // Shortcuts
-  document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') playBtn.click();
-      if (e.key === 'm' || e.key === 'M') muteBtn.click();
-      if (e.key === 'f' || e.key === 'F') fsBtn.click();
-  });
 
+  // --- CUSTOM RIGHT CLICK MENU ---
+  wrapper.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      ctxMenu.style.display = 'block';
+      ctxMenu.style.left = e.pageX + 'px';
+      ctxMenu.style.top = e.pageY + 'px';
+  });
+  document.addEventListener('click', () => ctxMenu.style.display = 'none');
+
+  function copyLink() {
+      navigator.clipboard.writeText(window.location.href);
+      showToast("Link Copied!");
+  }
+
+  function showToast(text) {
+      toast.innerText = text; toast.style.opacity = 1;
+      setTimeout(() => toast.style.opacity = 0, 2000);
+  }
 </script>
 </body>
 </html>
