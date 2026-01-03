@@ -23,12 +23,13 @@
             height: 100%;
         }
 
-        /* --- UPDATED OFFLINE SCREEN STYLES --- */
+        /* --- OFFLINE SCREEN WITH LOGO --- */
         #offline-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%); /* Premium dark gradient */
-            display: none; /* Initially hidden, script controls this */
+            /* Cool dark gradient background */
+            background: radial-gradient(circle, #2a2a2a 0%, #000000 90%);
+            display: none; /* Controlled by script */
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -38,44 +39,63 @@
             text-align: center;
         }
 
-        /* Signal Animation Container */
+        /* Container for Logo + Animation */
         .signal-container {
             position: relative;
-            width: 80px;
-            height: 80px;
+            width: 120px; /* Thoda bada kiya logo ke liye */
+            height: 120px;
             margin-bottom: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* Center Dot */
-        .signal-dot {
-            width: 15px;
-            height: 15px;
-            background-color: #ffcc00;
+        /* THE LOGO STYLE */
+        .brand-logo {
+            width: 70px;
+            height: 70px;
+            background: #ffcc00; /* CricHD Yellow Theme */
+            color: #000;
             border-radius: 50%;
-            z-index: 2;
-            box-shadow: 0 0 10px #ffcc00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5; /* Rings ke upar rahega */
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
+            font-family: "Impact", sans-serif;
+            font-size: 18px;
+            line-height: 1.1;
+            text-align: center;
+            border: 3px solid #fff;
+            overflow: hidden; /* Image bahar na nikle */
+        }
+        
+        /* Agar aap image use karenge toh yeh style apply hoga */
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        /* Ripple Rings */
+        /* Ripple Animation Rings */
         .signal-ring {
             position: absolute;
             width: 100%;
             height: 100%;
-            border: 2px solid rgba(255, 204, 0, 0.5);
+            border: 2px solid rgba(255, 204, 0, 0.4);
             border-radius: 50%;
             opacity: 0;
             animation: ripple 2s infinite ease-out;
+            top: 0; left: 0;
+            box-sizing: border-box;
         }
 
-        .signal-ring:nth-child(2) { animation-delay: 0.5s; }
-        .signal-ring:nth-child(3) { animation-delay: 1s; }
+        .signal-ring:nth-child(2) { animation-delay: 0.6s; }
+        .signal-ring:nth-child(3) { animation-delay: 1.2s; }
 
         @keyframes ripple {
-            0% { transform: scale(0.1); opacity: 1; border-width: 3px; }
-            100% { transform: scale(1.5); opacity: 0; border-width: 0px; }
+            0% { transform: scale(0.5); opacity: 1; border-width: 4px; }
+            100% { transform: scale(1.4); opacity: 0; border-width: 0px; }
         }
         
         .engaging-font {
@@ -85,23 +105,26 @@
             color: #fff;
             letter-spacing: 1px;
             margin: 0;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         .sub-text {
             font-family: sans-serif;
             font-size: 1.2vw;
-            color: #aaa;
+            color: #ccc;
             margin-top: 10px;
             text-transform: uppercase;
             letter-spacing: 2px;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 4px;
         }
         
-        /* Desktop Default Controls */
+        /* Controls Styling */
         .custom-controls {
             position: absolute;
             bottom: 0; left: 0; width: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             padding: 10px;
             box-sizing: border-box;
             display: flex;
@@ -110,32 +133,27 @@
             z-index: 20;
             opacity: 0; 
             transition: opacity 0.3s;
-            border-top: 1px solid #333;
+            border-top: 1px solid #444;
         }
 
         .player-container:hover .custom-controls { opacity: 1; }
 
-        /* --- MOBILE FIXES --- */
+        /* --- MOBILE RESPONSIVE --- */
         @media (max-width: 768px) {
-            .custom-controls {
-                opacity: 1; 
-                padding: 8px;
-            }
+            .custom-controls { opacity: 1; padding: 8px; }
             .engaging-font { font-size: 24px; } 
-            .sub-text { font-size: 12px; }
-            .signal-container { width: 60px; height: 60px; margin-bottom: 15px; }
-            button { padding: 5px 8px; font-size: 12px; }
+            .sub-text { font-size: 11px; }
+            .signal-container { width: 90px; height: 90px; } /* Mobile pe thoda chota */
+            .brand-logo { width: 50px; height: 50px; font-size: 12px; }
+            button { padding: 6px 10px; font-size: 12px; }
         }
 
         button, select, input {
             background: #333; color: white; border: 1px solid #555;
-            padding: 5px 10px; cursor: pointer; border-radius: 4px;
-            font-size: 13px;
+            padding: 5px 10px; cursor: pointer; border-radius: 4px; font-size: 13px;
         }
         button:hover { background: #ffcc00; color: black; border-color: #ffcc00; }
         input[type=range] { width: 60px; accent-color: #ffcc00; }
-        
-        /* Highlight Status */
         #statusText { margin-left: auto; font-size: 12px; font-weight: bold; }
     </style>
 </head>
@@ -144,13 +162,16 @@
     <div class="player-container">
         <div id="offline-overlay">
             <div class="signal-container">
-                <div class="signal-dot"></div>
+                <div class="brand-logo">
+                    <span>CRIC<br>HD</span>
+                </div>
                 <div class="signal-ring"></div>
                 <div class="signal-ring"></div>
                 <div class="signal-ring"></div>
             </div>
+            
             <h1 class="engaging-font">Stream Starting Soon</h1>
-            <div class="sub-text">Waiting for Live Signal...</div>
+            <div class="sub-text">Waiting for Live Feed...</div>
         </div>
 
         <div id="twitch-player"></div>
@@ -162,7 +183,7 @@
             <select id="qualitySelect">
                 <option value="auto">Auto</option>
             </select>
-            <span id="statusText" style="color: #0f0;">Checking...</span>
+            <span id="statusText" style="color: #0f0;">Connecting...</span>
         </div>
     </div>
 
@@ -199,13 +220,13 @@
 
       player.addEventListener(Twitch.Player.ONLINE, () => {
           statusText.innerText = "● LIVE NOW";
-          statusText.style.color = "#ff0000"; /* Bright Red for LIVE */
+          statusText.style.color = "#ff0000"; 
           statusText.style.textShadow = "0 0 5px red";
           offlineOverlay.style.display = "none";
       });
 
       player.addEventListener(Twitch.Player.OFFLINE, () => {
-          statusText.innerText = "STANDBY";
+          statusText.innerText = "OFFLINE";
           statusText.style.color = "#ffcc00";
           statusText.style.textShadow = "none";
           offlineOverlay.style.display = "flex";
